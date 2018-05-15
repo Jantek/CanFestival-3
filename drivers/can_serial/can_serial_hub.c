@@ -1,5 +1,5 @@
 /*
-This file is part of CanFestival, a library implementing CanOpen Stack. 
+This file is part of CanFestival, a library implementing CanOpen Stack.
 
 Copyright (C): James Steward
 
@@ -79,7 +79,7 @@ int hub_receive(port *p, Message *m)
 	int rv, N, n = 0;
 	fd_set rfds;
 	struct timeval tv;
-	
+
 	N = 4; //initially try to read 4 bytes, including the length byte
 
 retry:
@@ -94,11 +94,11 @@ retry:
 
 	if (n == 4) {
 		N = (4 + m->len);
-		
+
 		if (m->len > 8) {
-			fprintf(stderr, "Warning: invalid message length %d\n", 
+			fprintf(stderr, "Warning: invalid message length %d\n",
 					m->len);
-			
+
 			//try to resync
 			return 0;
 		}
@@ -112,14 +112,14 @@ retry:
 
 		tv.tv_sec = 0;
 		tv.tv_usec=100000;
-		
+
 		rv = select(p->fd + 1, &rfds, NULL, NULL, &tv);
 		if (rv == 0 || rv == -1) {
 			fprintf(stderr, "select: %s\n", strerror(errno));
 			return 0;
 		}
 
-		goto retry;	
+		goto retry;
 	}
 
 	return 1;
@@ -143,19 +143,19 @@ UNS8 hub_send(port *p, Message *m)
 int hub_open(port *p)
 {
 	if (p->fd != -1) {
-		fprintf(stderr, "Warning, port %s is already open, fd %d!\n", 
-					p->name, p->fd);	
+		fprintf(stderr, "Warning, port %s is already open, fd %d!\n",
+					p->name, p->fd);
 	}
 
 	p->fd = open(p->name, O_RDWR);
-	
+
 	if (p->fd < 0) {
 		fprintf(stderr, "open: %s, %s\n", p->name, strerror(errno));
 		goto exit_here;
 	}
 
 	if (tcgetattr(p->fd, &p->old_termio) != 0) {
-		fprintf(stderr, "tcgetattr: %s, %s\n", 
+		fprintf(stderr, "tcgetattr: %s, %s\n",
 					p->name, strerror(errno));
 		close(p->fd);
 		p->fd = -1;
@@ -205,11 +205,11 @@ int read_write(int rd_port, port *p, CAN_HANDLE h, fd_set *wfds, int max_fd)
 			return rv;
 		}
 	}
-	
+
 	memcpy(&wfds_copy, wfds, sizeof(fd_set));
 
 	rv = select(max_fd + 1, NULL, &wfds_copy, NULL, &tv);
-	
+
 	if (rv <= 0) {
 		return 0;
 	}
@@ -275,7 +275,7 @@ UNS8 UnLoadCanDriver(LIB_HANDLE handle)
 }
 
 /*Loads the dll and get funcs ptr*/
-LIB_HANDLE LoadCanDriver(char* driver_name)
+LIB_HANDLE LoadCanDriver(const char* driver_name)
 {
         LIB_HANDLE handle = NULL;
         char *error;
@@ -428,7 +428,7 @@ int main(int argc, char **argv)
 
 		//as timeout is NULL, must be a rfds set.
 		for (i = 0; i < MAX_HUB_PORTS + 1; i++) {
-			if (hub_ports[i].fd >= 0 && 
+			if (hub_ports[i].fd >= 0 &&
 					FD_ISSET(hub_ports[i].fd, &rfds_copy)) {
 
 				rv = read_write(i, hub_ports, can_h, &rfds, max_fd);
@@ -438,7 +438,7 @@ int main(int argc, char **argv)
 					FD_CLR(hub_ports[i].fd, &rfds);
 
 					hub_close(&hub_ports[i]);
-				}						
+				}
 			}
 
 			if (hub_ports[i].fd < 0 && i < MAX_HUB_PORTS) {
@@ -465,4 +465,3 @@ int main(int argc, char **argv)
 
 	return ret;
 }
-
